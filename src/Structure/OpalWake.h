@@ -57,6 +57,7 @@ public:
 
 private:
     enum class OpalWakeType: unsigned short {
+        ML,
         CSR,
         CSRIGF,
         LONGSHORTRANGE,

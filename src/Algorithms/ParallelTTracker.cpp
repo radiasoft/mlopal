@@ -309,7 +309,7 @@ void ParallelTTracker::execute() {
             selectDT(back_track);
 
             computeExternalFields(oth);
-            
+
             timeIntegration2(pusher);
 
             itsBunch_m->incrementT();
@@ -535,6 +535,7 @@ void ParallelTTracker::computeExternalFields(OrbitThreader &oth) {
     IndexMap::value_t elements;
 
     try {
+        // TODO(e-carlin): gets the elements that intersect with the bunch at this location
         elements = oth.query(pathLength_m + 0.5 * (rmax(2) + rmin(2)), rmax(2) - rmin(2));
     } catch(IndexMap::OutOfBounds &e) {
         globalEOL_m = true;
@@ -643,12 +644,21 @@ void ParallelTTracker::computeWakefield(IndexMap::value_t &elements) {
     IndexMap::value_t::const_iterator it = elements.begin();
     const IndexMap::value_t::const_iterator end = elements.end();
 
+    // TODO(e-carlin): iterate over elements
     for (; it != end; ++ it) {
+        // TODO(e-carlin): only compute wake for one element
+        // Not sure why that makes sense? My guess is it isn't too
+        // often that the bunch intersects with multiple elements that
+        // have a wake calc but could happen? I guess the element
+        // really has little to do with the actual wake calc so maybe
+        // that is why? The calc only needs to be done once for each
+        // step.
         if ((*it)->hasWake() && !hasWake) {
             IpplTimings::startTimer(WakeFieldTimer_m);
 
             hasWake = true;
 
+            // TODO(e-carlin): need to add mlwakefunction to this?
             if ((*it)->getWake()->getType() == WakeType::CSRWakeFunction ||
                 (*it)->getWake()->getType() == WakeType::CSRIGFWakeFunction) {
                 if ((*it)->getType() == ElementType::RBEND ||
@@ -675,18 +685,35 @@ void ParallelTTracker::computeWakefield(IndexMap::value_t &elements) {
 
             if (!itsBunch_m->hasFieldSolver()) itsBunch_m->calcBeamParameters();
 
+            // TODO(e-carlin): rotation needed to align the beam frame
+            // with the coordinate system of the reference frame. uses
+            // the momentum (p) and a vector representing the
+            // direction of the z-axis.
             Quaternion alignment = getQuaternion(itsBunch_m->get_pmean(), Vector_t(0, 0, 1));
+            // TODO(e-carlin): Reference frame to beam frame coordinate system transformation.
             CoordinateSystemTrafo referenceToBeamCSTrafo(Vector_t(0.0), alignment);
+            // TODO(e-carlin): beam to reference
             CoordinateSystemTrafo beamToReferenceCSTrafo = referenceToBeamCSTrafo.inverted();
 
+            // TODO(e-carlin): The wakefiled calculation is done in
+            // the beam frame. So, we need to convert from the
+            // reference frame to beam. Reference frame is looking at
+            // the bunch as it travels down the beamline. Beam frame
+            // is within the bunch of particles with the beam
+            // stationary.
+            // R => position of each particle in the bunch
+            // P => momentum of each particle
+            // Ef => electric field of each particle
             for (unsigned int i = 0; i < localNum; ++ i) {
                 itsBunch_m->R[i] = referenceToBeamCSTrafo.transformTo(itsBunch_m->R[i]);
                 itsBunch_m->P[i] = referenceToBeamCSTrafo.rotateTo(itsBunch_m->P[i]);
                 itsBunch_m->Ef[i] = referenceToBeamCSTrafo.rotateTo(itsBunch_m->Ef[i]);
             }
 
+            // TODO(e-carlin): do the calc
             wfInstance->apply(itsBunch_m);
 
+            // TODO(e-carlin): convert from beam back to reference frame
             for (unsigned int i = 0; i < localNum; ++ i) {
                 itsBunch_m->R[i] = beamToReferenceCSTrafo.transformTo(itsBunch_m->R[i]);
                 itsBunch_m->P[i] = beamToReferenceCSTrafo.rotateTo(itsBunch_m->P[i]);
