@@ -2,7 +2,7 @@ set (_SRCS
     BeamStrippingPhysics.cpp
     CSRIGFWakeFunction.cpp
     CSRWakeFunction.cpp
-    MLWakeFunction.cpp
+    CSR2DMLWakeFunction.cpp
     GreenWakeFunction.cpp
     ScatteringPhysics.cpp
     )
@@ -17,7 +17,7 @@ set (HDRS
     BeamStrippingPhysics.h
     CSRIGFWakeFunction.h
     CSRWakeFunction.h
-    MLWakeFunction.h
+    CSR2DMLWakeFunction.h
     GreenWakeFunction.h
     ParticleMatterInteractionHandler.h
     ScatteringPhysics.h

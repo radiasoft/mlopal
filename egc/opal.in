@@ -25,11 +25,11 @@ REAL time_step_1 = 4.37345628028939e-12;
 
 "OP1": option,autophase=1.0,csrdump=true,info=false,psdumpfreq=PS_DUMP_FREQUENCY,statdumpfreq=STAT_DUMP_FREQUENCY,version=10900.0;
 "SG_FILTER": filter,nleft=CSR_SG_NLEFT,npoints=CSR_SG_NLEFT + CSR_SG_NRIGHT + 1,nright=CSR_SG_NRIGHT,polyorder=CSR_SG_POLYORDER,type="SAVITZKY-GOLAY";
-"ML_WAKE": wake,filters="SG_FILTER",type="ML";
+"CSR_2D_ML_WAKE": wake,filters="SG_FILTER",type="2D-CSR-ML";
 
 "D1": DRIFT,l=drift_before_bend;
-"D2": DRIFT,l=0.4,wakef=ML_WAKe;
-"S1": SBEND,angle=bend_angle,designenergy=bend_energy,e1=0.08726646259971647,e2=0.08726646259971647,gap=0.02,l=bend_length,wakef=ML_WAKE;
+"D2": DRIFT,l=0.4,wakef=CSR_2D_ML_WAKE;
+"S1": SBEND,angle=bend_angle,designenergy=bend_energy,e1=0.08726646259971647,e2=0.08726646259971647,gap=0.02,l=bend_length,wakef=CSR_2D_ML_WAKE;
 
 "D1#0": "D1",elemedge=0;
 "S1#0": "S1",elemedge=0.1;

@@ -22,7 +22,7 @@
 #include "Attributes/Attributes.h"
 #include "Solvers/GreenWakeFunction.h"
 #include "Solvers/CSRWakeFunction.h"
-#include "Solvers/MLWakeFunction.h"
+#include "Solvers/CSR2DMLWakeFunction.h"
 #include "Solvers/CSRIGFWakeFunction.h"
 #include "Utilities/OpalException.h"
 #include "Utilities/OpalFilter.h"
@@ -55,7 +55,7 @@ OpalWake::OpalWake():
     wf_m(0) {
     itsAttr[TYPE] = Attributes::makePredefinedString
         ("TYPE", "Specifies the wake function.",
-         {"ML", "1D-CSR", "1D-CSR-IGF", "LONG-SHORT-RANGE", "TRANSV-SHORT-RANGE"});
+         {"2D-CSR-ML", "1D-CSR", "1D-CSR-IGF", "LONG-SHORT-RANGE", "TRANSV-SHORT-RANGE"});
 
     itsAttr[NBIN] = Attributes::makeReal
         ("NBIN", "Number of bins for the line density calculation");
@@ -163,7 +163,7 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     }
 
     static const std::unordered_map<std::string, OpalWakeType> stringOpalWakeType_s = {
-        {"ML",                 OpalWakeType::ML},
+        {"2D-CSR-ML",                 OpalWakeType::CSR2DML},
         {"1D-CSR",             OpalWakeType::CSR},
         {"1D-CSR-IGF",         OpalWakeType::CSRIGF},
         {"LONG-SHORT-RANGE",   OpalWakeType::LONGSHORTRANGE},
@@ -176,14 +176,14 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     }
     OpalWakeType type = stringOpalWakeType_s.at(Attributes::getString(itsAttr[TYPE]));
     switch (type) {
-        case OpalWakeType::ML: {
+        case OpalWakeType::CSR2DML: {
             // TODO(e-carlin): figure this out. Not needed for ML model?
             if (filters.size() == 0 && Attributes::getReal(itsAttr[NBIN]) <= 7) {
                 throw OpalException("OpalWake::initWakeFunction",
                                     "At least 8 bins have to be used, ideally far more");
             }
 
-            wf_m = new MLWakeFunction(getOpalName(), (int)(Attributes::getReal(itsAttr[NBIN])));
+            wf_m = new CSR2DMLWakeFunction(getOpalName(), (int)(Attributes::getReal(itsAttr[NBIN])));
             break;
         }
         case OpalWakeType::CSR: {

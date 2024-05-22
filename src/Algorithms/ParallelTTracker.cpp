@@ -61,6 +61,12 @@ ParallelTTracker::ParallelTTracker(const Beamline &beamline,
                                    const PartData &reference,
                                    bool revBeam,
                                    bool revTrack):
+    // TODO(e-carlin): this is called "initializer list" member
+    // variables (looks like OPAL convention is to use _m for them)
+    // are initialized as well as base class Tracker because it
+    // doesn't have a default a default constructor (constructor with
+    // no parameters). in the case of wakeFunction_m(nullptr) this
+    // sets wakeFunction_m = nullptr
     Tracker(beamline, reference, revBeam, revTrack),
     itsDataSink_m(nullptr),
     itsOpalBeamline_m(beamline.getOrigin3D(), beamline.getInitialDirection()),
@@ -658,7 +664,12 @@ void ParallelTTracker::computeWakefield(IndexMap::value_t &elements) {
 
             hasWake = true;
 
-            // TODO(e-carlin): need to add mlwakefunction to this?
+            // TODO(e-carlin): My guess is this code is to satisfy something about wakes with bends and drifts
+            // see https://amas.web.psi.ch/opal/Documentation/2022.1/#sec.benchmarks.1d-csr-comparison-with-elegant
+            // I think maybe this is for a drift following a bend. We use wakeFunction_m from the bend element
+            // to calculate the wake effect for the drift.
+            // TODO(e-carlin): Need to work with Chris to see if this is relevant for us.
+            // For now skip it.
             if ((*it)->getWake()->getType() == WakeType::CSRWakeFunction ||
                 (*it)->getWake()->getType() == WakeType::CSRIGFWakeFunction) {
                 if ((*it)->getType() == ElementType::RBEND ||
