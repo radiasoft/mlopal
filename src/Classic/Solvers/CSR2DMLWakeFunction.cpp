@@ -18,6 +18,7 @@
 #include "AbstractObjects/OpalData.h"
 #include "Algorithms/PartBunchBase.h"
 #include "Utilities/Util.h"
+#include <torch/torch.h>
 
 CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name,
                                  const unsigned int& N):
@@ -26,33 +27,8 @@ CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name,
 
 void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
-
-// std::pair<std::vector<std::vector<double>>, std::map<std::string, std::vector<double>>> convertToModelInput(PartBunchBase& partBunch) {
-    // std::vector<std::vector<double>> lambda_distribution = partBunch.Q;  // Assuming Q is a 2D array
-
-    // double x_min = std::numeric_limits<double>::max();
-    // double x_max = std::numeric_limits<double>::min();
-    // double z_min = std::numeric_limits<double>::max();
-    // double z_max = std::numeric_limits<double>::min();
-
-    // // Find spatial extent of the bunch
-    // for (const auto& position : partBunch.R) {
-    //     x_min = std::min(x_min, position.x);
-    //     x_max = std::max(x_max, position.x);
-    //     z_min = std::min(z_min, position.z);
-    //     z_max = std::max(z_max, position.z);
-    // }
-
-    // // TODO(e-carlin): pretty unsure about these.
-    // std::map<std::string, std::vector<double>> scalars = {
-    //     {"s", {std::accumulate(partBunch.Q.begin(), partBunch.Q.end(), 0.0)}},
-    //     {"Sx", {x_max - x_min}},
-    //     {"Sz", {z_max - z_min}},
-    //     {"rho_max", {*std::max_element(partBunch.Q.begin(), partBunch.Q.end())}}
-    // };
-
-    // return {lambda_distribution, scalars};
     // TODO(e-carlin): call model
+    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 }
 
 void CSR2DMLWakeFunction::initialize(const ElementBase* ref) {

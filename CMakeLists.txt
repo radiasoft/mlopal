@@ -38,6 +38,8 @@ endif()
 # Resolve all library dependencies
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
+find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 find_package (MPI REQUIRED)
 message (STATUS "The C++ compiler identification is: ${CMAKE_CXX_COMPILER_ID}")
 message (STATUS "The C++ compiler version is: ${CMAKE_CXX_COMPILER_VERSION}")
@@ -69,7 +71,7 @@ endif ()
 
 if (${WILL_BUILD_SHARED_LIBRARY})
     add_compile_options ( -fPIC)
-    
+
     # force OPAL to link to shared libraries
     if (UNIX)
         set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
