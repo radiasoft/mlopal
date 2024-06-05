@@ -1,3 +1,4 @@
+list(APPEND CMAKE_MODULE_PATH "/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11")
 cmake_minimum_required (VERSION 3.12)
 cmake_policy(VERSION 3.12)
 
