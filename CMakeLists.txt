@@ -38,7 +38,6 @@ endif()
 # Resolve all library dependencies
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 find_package (MPI REQUIRED)
 message (STATUS "The C++ compiler identification is: ${CMAKE_CXX_COMPILER_ID}")
@@ -62,6 +61,10 @@ add_compile_options (-Wextra)
 
 add_compile_options (-funroll-loops)
 add_compile_options (-fstrict-aliasing)
+
+find_package(PythonLibs REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+find_package(Torch REQUIRED)
 
 option (WILL_BUILD_STATIC_LIBRARY "Building static library" ON)
 if (BUILD_OPAL_PYTHON)
