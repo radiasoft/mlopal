@@ -4,7 +4,7 @@ set -eou pipefail
 # Build / recompile opal
 #
 # Need new pybind `pip install --upgrade pybind11[global]`
-# mv /home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11 ~/.local/share
+# pybind11-config --cmakedir
 
 declare -A codes_dir=()
 
@@ -80,7 +80,6 @@ if [[ ! -d build ]]; then
     ' CMakeLists.txt
     # need to specify CC and CXX otherwise build uses wrong
     # compiler.
-    # TODO(e-carlin):  shouldn't have to set hardcoded paths for PYTHON_INCLUDE_DIR, PYTHON_LIBRARY, and pybind11_DIR
     H5HUT_PREFIX="${codes_dir[prefix]}" \
         BOOST_DIR="${codes_dir[prefix]}" \
         HDF5_INCLUDE_DIR=/usr/include \
@@ -93,10 +92,7 @@ if [[ ! -d build ]]; then
         -D CMAKE_POSITION_INDEPENDENT_CODE=FALSE \
         -D ENABLE_OPAL_FEL=yes \
         -D ENABLE_SAAMG_SOLVER=TRUE \
-        -D PYTHON_INCLUDE_DIR=/home/vagrant/.pyenv/versions/3.9.15/include/python3.9 \
-        -D PYTHON_LIBRARY=/home/vagrant/.pyenv/versions/py3/lib/python3.9/site-packages \
-        -D USE_STATIC_LIBRARIES=FALSE \
-        -D pybind11_DIR=/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11
+        -D USE_STATIC_LIBRARIES=FALSE
 fi
 cd ~/src/radiasoft/mlopal/build
 codes_make all
@@ -114,6 +110,4 @@ codes_make all
     #     -D CMAKE_POSITION_INDEPENDENT_CODE=FALSE \
     #     -D ENABLE_OPAL_FEL=yes \
     #     -D ENABLE_SAAMG_SOLVER=TRUE \
-    #     -D PYTHON_INCLUDE_DIR=/home/vagrant/.pyenv/versions/3.9.15/include/python3.9 \
-    #     -D PYTHON_LIBRARY=/home/vagrant/.pyenv/versions/py3/lib/python3.9/site-packages \
     #     -D USE_STATIC_LIBRARIES=FALSE

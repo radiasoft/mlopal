@@ -63,7 +63,10 @@ add_compile_options (-Wextra)
 add_compile_options (-funroll-loops)
 add_compile_options (-fstrict-aliasing)
 
-find_package(PythonLibs REQUIRED)
+# TODO(e-carlin): Why do I have to hardcode these paths?
+set(Python_EXECUTABLE "/home/vagrant/.pyenv/shims/python3")
+set(pybind11_DIR "/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11")
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(Torch REQUIRED)
 
