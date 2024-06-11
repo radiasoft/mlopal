@@ -23,7 +23,7 @@ namespace py = pybind11;
 #include "Utilities/Util.h"
 #include <torch/torch.h>
 
-CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name, std::string pyFilepath):
+CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name, std::filesystem::path pyFilepath):
     // TODO(e-carlin): 0 is hard-coded because we don't use nBins_m
     WakeFunction(name, 0),
     pyFilepath_m(pyFilepath)

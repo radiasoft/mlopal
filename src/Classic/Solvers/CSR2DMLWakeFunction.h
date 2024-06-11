@@ -27,7 +27,7 @@ class ElementBase;
 
 class CSR2DMLWakeFunction: public WakeFunction {
 public:
-    CSR2DMLWakeFunction(const std::string& name, std::string pyFilepath);
+    CSR2DMLWakeFunction(const std::string& name, const std::filesystem::path pyFilepath);
 
     void apply(PartBunchBase<double, 3>* bunch) override;
 
@@ -36,7 +36,7 @@ public:
     virtual WakeType getType() const override;
 private:
     /// python file that calls ml model
-    std::string pyFilepath_m;
+    std::filesystem::path pyFilepath_m;
 };
 
 #endif //CSR2DMLWAKEFUNCTION_HH
