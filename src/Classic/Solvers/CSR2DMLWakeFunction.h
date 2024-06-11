@@ -20,19 +20,23 @@
 #include "Solvers/WakeFunction.h"
 
 #include <vector>
+#include <filesystem>
 
 class Filter;
 class ElementBase;
 
 class CSR2DMLWakeFunction: public WakeFunction {
 public:
-    CSR2DMLWakeFunction(const std::string& name, const unsigned int& N);
+    CSR2DMLWakeFunction(const std::string& name, std::string pyFilepath);
 
     void apply(PartBunchBase<double, 3>* bunch) override;
 
     void initialize(const ElementBase* ref) override;
 
     virtual WakeType getType() const override;
+private:
+    /// python file that calls ml model
+    std::string pyFilepath_m;
 };
 
 #endif //CSR2DMLWAKEFUNCTION_HH

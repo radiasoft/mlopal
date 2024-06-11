@@ -44,6 +44,7 @@ namespace {
         TAU,
         FILTERS,      // List of filters to apply on line density
         FNAME,
+        PY_FILEPATH,
         SIZE
     };
 }
@@ -83,6 +84,9 @@ OpalWake::OpalWake():
 
     itsAttr[FNAME] = Attributes::makeString
         ("FNAME", "Filename of the wakefield file");
+
+    itsAttr[PY_FILEPATH] = Attributes::makeString
+        ("PY_FILEPATH", "TODO doc");
 
     OpalWake* defWake = clone("UNNAMED_WAKE");
     defWake->builtin = true;
@@ -177,13 +181,7 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     OpalWakeType type = stringOpalWakeType_s.at(Attributes::getString(itsAttr[TYPE]));
     switch (type) {
         case OpalWakeType::CSR2DML: {
-            // TODO(e-carlin): figure this out. Not needed for ML model?
-            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBIN]) <= 7) {
-                throw OpalException("OpalWake::initWakeFunction",
-                                    "At least 8 bins have to be used, ideally far more");
-            }
-
-            wf_m = new CSR2DMLWakeFunction(getOpalName(), (int)(Attributes::getReal(itsAttr[NBIN])));
+            wf_m = new CSR2DMLWakeFunction(getOpalName(), Attributes::getString(itsAttr[PY_FILEPATH]));
             break;
         }
         case OpalWakeType::CSR: {
