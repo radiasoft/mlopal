@@ -21,7 +21,6 @@ namespace py = pybind11;
 #include "AbstractObjects/OpalData.h"
 #include "Algorithms/PartBunchBase.h"
 #include "Utilities/Util.h"
-#include <torch/torch.h>
 
 CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name, std::filesystem::path pyFilepath):
     // TODO(e-carlin): 0 is hard-coded because we don't use nBins_m

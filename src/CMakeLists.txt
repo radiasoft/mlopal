@@ -106,7 +106,6 @@ include_directories (BEFORE
     ${AMREX_INCLUDE_DIR}
     ${GTEST_INCLUDE_DIRS}
     ${OPTP_INCLUDE_DIR}
-    ${TORCH_INCLUDE_DIRS}
     ${Python_INCLUDE_DIRS}
     )
 
@@ -131,7 +130,6 @@ if (WILL_BUILD_STATIC_LIBRARY)
         ${AMR_MG_SOLVER_LIBS}
         ${AMR_LIBS}
         ${MPI_CXX_LIBRARIES}
-        ${TORCH_LIBRARIES}
         pybind11::embed # TODO(e-carlin): Is there a var for this?
         ${Python_LIBRARIES}
         )
@@ -155,7 +153,6 @@ if (WILL_BUILD_SHARED_LIBRARY)
         ${H5Hut_LIBRARY}
         ${HDF5_LIBRARIES}
         ${Boost_LIBRARIES}
-        ${TORCH_LIBRARIES}
         pybind11::embed # TODO(e-carlin): Is there a var for this?
         ${Python_LIBRARIES}
         m
@@ -179,7 +176,6 @@ target_link_libraries( opal
     ${H5Hut_LIBRARY}
     ${HDF5_LIBRARIES}
     ${Boost_LIBRARIES}
-    ${TORCH_LIBRARIES}
     pybind11::embed # TODO(e-carlin): Is there a var for this?
     ${Python_LIBRARIES}
     m

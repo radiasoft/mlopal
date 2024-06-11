@@ -39,7 +39,6 @@ endif()
 # Resolve all library dependencies
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 find_package (MPI REQUIRED)
 message (STATUS "The C++ compiler identification is: ${CMAKE_CXX_COMPILER_ID}")
 message (STATUS "The C++ compiler version is: ${CMAKE_CXX_COMPILER_VERSION}")
@@ -68,7 +67,6 @@ set(Python_EXECUTABLE "/home/vagrant/.pyenv/shims/python3")
 set(pybind11_DIR "/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11")
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
-find_package(Torch REQUIRED)
 
 option (WILL_BUILD_STATIC_LIBRARY "Building static library" ON)
 if (BUILD_OPAL_PYTHON)
