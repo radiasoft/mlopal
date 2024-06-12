@@ -21,22 +21,27 @@
 
 #include <vector>
 #include <filesystem>
+#include <pybind11/embed.h>
+namespace py = pybind11;
 
 class Filter;
 class ElementBase;
 
 class CSR2DMLWakeFunction: public WakeFunction {
 public:
-    CSR2DMLWakeFunction(const std::string& name, const std::filesystem::path pyFilepath);
+    CSR2DMLWakeFunction(const std::string& name, const std::filesystem::path pyFilepath, const unsigned int& N);
 
     void apply(PartBunchBase<double, 3>* bunch) override;
+
 
     void initialize(const ElementBase* ref) override;
 
     virtual WakeType getType() const override;
 private:
+    std::vector<std::vector<double>> planeDensity_m;
     /// python file that calls ml model
     std::filesystem::path pyFilepath_m;
+    py::function getWakeFn();
 };
 
 #endif //CSR2DMLWAKEFUNCTION_HH

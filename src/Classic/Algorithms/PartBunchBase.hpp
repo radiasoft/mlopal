@@ -505,6 +505,78 @@ void PartBunchBase<T, Dim>::calcLineDensity(unsigned int nBins,
     meshInfo.second = hz;
 }
 
+// Template function to calculate the density of a particle bunch over a plane
+template <class T, unsigned Dim>
+void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int nBinsY,
+                                             std::vector<std::vector<double>>& planeDensity,
+                                             std::pair<double, double>& meshInfoX,
+                                             std::pair<double, double>& meshInfoY) {
+    // Get the bounds of the particle bunch
+    Vector_t rmin, rmax;
+    get_bounds(rmin, rmax);
+
+    // If the number of bins in either dimension is less than 2,
+    // update the domain length
+    // TODO(e-carlin): copied from calcLineDensity. Why is this needed?
+    if (nBinsX < 2 || nBinsY < 2) {
+        Vektor<int, 3>/*NDIndex<3>*/ grid;
+        this->updateDomainLength(grid);
+        nBinsX = grid[0];
+        nBinsY = grid[1];
+    }
+
+    // Calculate the length and bin size in the x dimension
+    double lengthX = rmax(0) - rmin(0);
+    double xmin = rmin(0) - dh_m * lengthX, xmax = rmax(0) + dh_m * lengthX;
+    double hx = (xmax - xmin) / (nBinsX - 2);
+
+    // Calculate the length and bin size in the y dimension
+    double lengthY = rmax(1) - rmin(1);
+    double ymin = rmin(1) - dh_m * lengthY, ymax = rmax(1) + dh_m * lengthY;
+    double hy = (ymax - ymin) / (nBinsY - 2);
+
+    // Calculate the area of each bin (inverse of the density per meter)
+    double perMeter = 1.0 / (hx * hy);
+    xmin -= hx;
+    ymin -= hy;
+
+    // Initialize the 2D density vector with zeros
+    planeDensity.resize(nBinsY, std::vector<double>(nBinsX, 0.0));
+    for(auto& line : planeDensity) {
+        std::fill(line.begin(), line.end(), 0.0);
+    }
+
+    // Go through each particle and add its contribution to the bins it falls into
+    const unsigned int lN = getLocalNum();
+    for (unsigned int i = 0; i < lN; ++ i) {
+        const double x = R[i](0) - 0.5 * hx;
+        const double y = R[i](1) - 0.5 * hy;
+        unsigned int idx = (x - xmin) / hx;
+        unsigned int idy = (y - ymin) / hy;
+        double tau_x = (x - xmin) / hx - idx;
+        double tau_y = (y - ymin) / hy - idy;
+
+        // Add the particle's contribution to the four bins it may fall into
+        planeDensity[idy][idx] += Q[i] * (1.0 - tau_x) * (1.0 - tau_y) * perMeter;
+        planeDensity[idy][idx + 1] += Q[i] * tau_x * (1.0 - tau_y) * perMeter;
+        planeDensity[idy + 1][idx] += Q[i] * (1.0 - tau_x) * tau_y * perMeter;
+        planeDensity[idy + 1][idx + 1] += Q[i] * tau_x * tau_y * perMeter;
+    }
+
+    // Reduce the density values for all bins
+    // TODO(e-carlin): need to understand this more. Need to get types right to make compiler happy
+    // for(auto& line : planeDensity) {
+    //     reduce(line, line, line.end() - line.begin(), OpAddAssign());
+    // }
+
+    // Set the mesh information for x and y dimensions
+    meshInfoX.first = xmin;
+    meshInfoX.second = hx;
+    meshInfoY.first = ymin;
+    meshInfoY.second = hy;
+}
+
+
 
 template <class T, unsigned Dim>
 void PartBunchBase<T, Dim>::boundp() {
@@ -586,12 +658,12 @@ void PartBunchBase<T, Dim>::boundp() {
             Layout_t* layoutp = static_cast<Layout_t*>(&getLayout());
             layoutp->setCacheDimension(0,fs_m->solver_m->getinteractionRadius());
             layoutp->setCacheDimension(1,fs_m->solver_m->getinteractionRadius());
-            
+
             double gammaz = sum(this->P)[2] / getTotalNum();
             gammaz *= gammaz;
             gammaz = std::sqrt(gammaz + 1.0);
 
-            //Interaction radius is set in the boosted frame but ghost particles 
+            //Interaction radius is set in the boosted frame but ghost particles
             //are identified in the lab frame that's why we divide by gammaz here
             layoutp->setCacheDimension(2,fs_m->solver_m->getinteractionRadius()/gammaz);
             layoutp->enableCaching();
@@ -1343,7 +1415,7 @@ void PartBunchBase<T, Dim>::setSolver(FieldSolver *fs) {
 //         this->setMesh(fs_m->getMesh());
 //         this->setFieldLayout(fs_m->getFieldLayout());
     }
-    
+
 }
 
 

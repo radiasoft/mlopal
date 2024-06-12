@@ -13,8 +13,8 @@
 // along with OPAL. If not, see <https://www.gnu.org/licenses/>.
 //
 #include "Solvers/CSR2DMLWakeFunction.h"
-#include <pybind11/embed.h>
 #include <filesystem>
+#include <pybind11/embed.h>
 namespace py = pybind11;
 
 // TODO(e-carlin): needed?
@@ -22,21 +22,41 @@ namespace py = pybind11;
 #include "Algorithms/PartBunchBase.h"
 #include "Utilities/Util.h"
 
-CSR2DMLWakeFunction::CSR2DMLWakeFunction(const std::string& name, std::filesystem::path pyFilepath):
-    // TODO(e-carlin): 0 is hard-coded because we don't use nBins_m
-    WakeFunction(name, 0),
+CSR2DMLWakeFunction::CSR2DMLWakeFunction(
+    const std::string& name,
+    std::filesystem::path pyFilepath,
+    const unsigned int& N
+    ):
+    WakeFunction(name, N),
+    planeDensity_m(),
     pyFilepath_m(pyFilepath)
 {}
 
 void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
+    // bunch->calcLineDensity(nBins_m, lineDensity_m, meshInfo);
+    std::cout << "1111111111111111" << std::endl;
+    std::pair<double, double> meshInfoX;
+    std::pair<double, double> meshInfoY;
+    // TODO(e-carlin): one nBins_m
+    bunch->calcPlaneDensity(
+        nBins_m,
+        nBins_m,
+        planeDensity_m,
+        // bunch,
+        meshInfoX,
+        meshInfoY
+    );
+    // bunch->calcLineDensity(nBins_m, lineDensity_m, meshInfo);
+    std::cout << "22222222222222222" << std::endl;
     py::scoped_interpreter guard{};
-    py::module sys = py::module::import("sys");
-    sys.attr("path").attr("append")(pyFilepath_m.parent_path().string().c_str());
-    py::module py_module = py::module::import(pyFilepath_m.stem().string().c_str());
-    py::function get_wake = py_module.attr("get_wake");
-    py::object result = get_wake(bunch); // call the python function
-    std::cout << "xxxxxxxxxxxxxxxxxx The result is: " << result.cast<int>() << std::endl; // print the result
+    py::object result = getWakeFn()("Im the bunch object");
+    std::cout << "xxxxxxxxxxxxxxxxxx The result is: " << result.cast<int>() << std::endl;
+}
+
+py::function CSR2DMLWakeFunction::getWakeFn() {
+    py::module::import("sys").attr("path").attr("append")(pyFilepath_m.parent_path().string().c_str());
+    return py::module::import(pyFilepath_m.stem().string().c_str()).attr("get_wake");
 }
 
 void CSR2DMLWakeFunction::initialize(const ElementBase* ref) {

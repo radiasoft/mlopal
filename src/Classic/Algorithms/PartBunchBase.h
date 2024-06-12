@@ -159,6 +159,11 @@ public:
     void calcLineDensity(unsigned int nBins, std::vector<double>& lineDensity,
                          std::pair<double, double>& meshInfo);
 
+    void calcPlaneDensity(unsigned int nBinsX, unsigned int nBinsY,
+                          std::vector<std::vector<double>>& planeDensity,
+                          std::pair<double, double>& meshInfoX,
+                          std::pair<double, double>& meshInfoY);
+
     void setBeamFrequency(double v);
 
     /*
