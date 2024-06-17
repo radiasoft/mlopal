@@ -41,6 +41,9 @@ private:
     std::vector<std::vector<double>> planeDensity_m;
     /// python file that calls ml model
     std::filesystem::path pyFilepath_m;
+    // Radius of curvature of effective dipole.
+    double bendRadius_m;
+    double totalBendAngle_m;
     py::function getWakeFn();
 };
 

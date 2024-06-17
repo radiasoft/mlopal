@@ -507,10 +507,10 @@ void PartBunchBase<T, Dim>::calcLineDensity(unsigned int nBins,
 
 // Template function to calculate the density of a particle bunch over a plane
 template <class T, unsigned Dim>
-void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int nBinsY,
+void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int nBinsZ,
                                              std::vector<std::vector<double>>& planeDensity,
                                              std::pair<double, double>& meshInfoX,
-                                             std::pair<double, double>& meshInfoY) {
+                                             std::pair<double, double>& meshInfoZ) {
     // Get the bounds of the particle bunch
     Vector_t rmin, rmax;
     get_bounds(rmin, rmax);
@@ -518,30 +518,35 @@ void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int n
     // If the number of bins in either dimension is less than 2,
     // update the domain length
     // TODO(e-carlin): copied from calcLineDensity. Why is this needed?
-    if (nBinsX < 2 || nBinsY < 2) {
+    if (nBinsX < 2 || nBinsZ < 2) {
         Vektor<int, 3>/*NDIndex<3>*/ grid;
         this->updateDomainLength(grid);
         nBinsX = grid[0];
-        nBinsY = grid[1];
+        nBinsZ = grid[2];
     }
 
     // Calculate the length and bin size in the x dimension
     double lengthX = rmax(0) - rmin(0);
+    // dh_m is a relative factor to increase the mesh size. It helps to make
+    // it so particles at edges of the bunch aren't incorrectly binned (I think?).
     double xmin = rmin(0) - dh_m * lengthX, xmax = rmax(0) + dh_m * lengthX;
+    // hx is the size of each bin (I think?)
+    // TODO(e-carlin): why subtract 2 from the nBins?
     double hx = (xmax - xmin) / (nBinsX - 2);
 
-    // Calculate the length and bin size in the y dimension
-    double lengthY = rmax(1) - rmin(1);
-    double ymin = rmin(1) - dh_m * lengthY, ymax = rmax(1) + dh_m * lengthY;
-    double hy = (ymax - ymin) / (nBinsY - 2);
+    // Calculate the length and bin size in the z dimension
+    double lengthZ = rmax(2) - rmin(2);
+    double zmin = rmin(2) - dh_m * lengthZ, zmax = rmax(2) + dh_m * lengthZ;
+    double hz = (zmax - zmin) / (nBinsZ - 2);
 
     // Calculate the area of each bin (inverse of the density per meter)
-    double perMeter = 1.0 / (hx * hy);
+    double perMeter = 1.0 / (hx * hz);
     xmin -= hx;
-    ymin -= hy;
+    zmin -= hz;
 
     // Initialize the 2D density vector with zeros
-    planeDensity.resize(nBinsY, std::vector<double>(nBinsX, 0.0));
+    planeDensity.resize(nBinsZ, std::vector<double>(nBinsX, 0.0));
+    // TODO(e-carlin): is this needed or did the step above cover it?
     for(auto& line : planeDensity) {
         std::fill(line.begin(), line.end(), 0.0);
     }
@@ -550,17 +555,17 @@ void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int n
     const unsigned int lN = getLocalNum();
     for (unsigned int i = 0; i < lN; ++ i) {
         const double x = R[i](0) - 0.5 * hx;
-        const double y = R[i](1) - 0.5 * hy;
+        const double z = R[i](2) - 0.5 * hz;
         unsigned int idx = (x - xmin) / hx;
-        unsigned int idy = (y - ymin) / hy;
+        unsigned int idz = (z - zmin) / hz;
         double tau_x = (x - xmin) / hx - idx;
-        double tau_y = (y - ymin) / hy - idy;
+        double tau_z = (z - zmin) / hz - idz;
 
         // Add the particle's contribution to the four bins it may fall into
-        planeDensity[idy][idx] += Q[i] * (1.0 - tau_x) * (1.0 - tau_y) * perMeter;
-        planeDensity[idy][idx + 1] += Q[i] * tau_x * (1.0 - tau_y) * perMeter;
-        planeDensity[idy + 1][idx] += Q[i] * (1.0 - tau_x) * tau_y * perMeter;
-        planeDensity[idy + 1][idx + 1] += Q[i] * tau_x * tau_y * perMeter;
+        planeDensity[idz][idx] += Q[i] * (1.0 - tau_x) * (1.0 - tau_z) * perMeter;
+        planeDensity[idz][idx + 1] += Q[i] * tau_x * (1.0 - tau_z) * perMeter;
+        planeDensity[idz + 1][idx] += Q[i] * (1.0 - tau_x) * tau_z * perMeter;
+        planeDensity[idz + 1][idx + 1] += Q[i] * tau_x * tau_z * perMeter;
     }
 
     // Reduce the density values for all bins
@@ -569,11 +574,11 @@ void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int n
     //     reduce(line, line, line.end() - line.begin(), OpAddAssign());
     // }
 
-    // Set the mesh information for x and y dimensions
+    // Set the mesh information for x and z dimensions
     meshInfoX.first = xmin;
     meshInfoX.second = hx;
-    meshInfoY.first = ymin;
-    meshInfoY.second = hy;
+    meshInfoZ.first = zmin;
+    meshInfoZ.second = hz;
 }
 
 

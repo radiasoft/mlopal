@@ -12,14 +12,18 @@
 // You should have received a copy of the GNU General Public License
 // along with OPAL. If not, see <https://www.gnu.org/licenses/>.
 //
+#include "AbsBeamline/RBend.h"
+#include "AbsBeamline/SBend.h"
+#include "Algorithms/PartBunchBase.h"
 #include "Solvers/CSR2DMLWakeFunction.h"
+#include "AbstractObjects/OpalData.h"
+
 #include <filesystem>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h> // type conversion
 namespace py = pybind11;
 
 // TODO(e-carlin): needed?
-#include "AbstractObjects/OpalData.h"
-#include "Algorithms/PartBunchBase.h"
 #include "Utilities/Util.h"
 
 CSR2DMLWakeFunction::CSR2DMLWakeFunction(
@@ -28,13 +32,14 @@ CSR2DMLWakeFunction::CSR2DMLWakeFunction(
     const unsigned int& N
     ):
     WakeFunction(name, N),
+    bendRadius_m(0.0),
     planeDensity_m(),
-    pyFilepath_m(pyFilepath)
+    pyFilepath_m(pyFilepath),
+    totalBendAngle_m(0.0)
 {}
 
 void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
-    // bunch->calcLineDensity(nBins_m, lineDensity_m, meshInfo);
     std::cout << "1111111111111111" << std::endl;
     std::pair<double, double> meshInfoX;
     std::pair<double, double> meshInfoY;
@@ -43,14 +48,20 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
         nBins_m,
         nBins_m,
         planeDensity_m,
-        // bunch,
         meshInfoX,
         meshInfoY
     );
-    // bunch->calcLineDensity(nBins_m, lineDensity_m, meshInfo);
+    Vector_t smin, smax;
+    bunch->get_bounds(smin, smax);
     std::cout << "22222222222222222" << std::endl;
     py::scoped_interpreter guard{};
-    py::object result = getWakeFn()("Im the bunch object");
+    py::object result = getWakeFn()(
+        planeDensity_m,
+        bendRadius_m,
+        totalBendAngle_m,
+        smax(0) - smin(0),
+        smax(2) - smin(2)
+    );
     std::cout << "xxxxxxxxxxxxxxxxxx The result is: " << result.cast<int>() << std::endl;
 }
 
@@ -60,7 +71,23 @@ py::function CSR2DMLWakeFunction::getWakeFn() {
 }
 
 void CSR2DMLWakeFunction::initialize(const ElementBase* ref) {
-    // TODO(e-carlin): del?
+    // TODO(e-carlin): copied from CSRWakeFunction.cpp
+    // TODO(e-carlin): do we need all of these values?
+    if (ref->getType() == ElementType::RBEND ||
+        ref->getType() == ElementType::SBEND) {
+
+        const Bend2D *bend = static_cast<const Bend2D *>(ref);
+        // TODO(e-carlin): used below. Needed?
+        // double End;
+
+        bendRadius_m = bend->getBendRadius();
+        totalBendAngle_m = std::abs(bend->getBendAngle());
+        // TODO(e-carlin): needed?
+        // bend->getDimensions(Begin_m, End);
+        // Length_m = bend->getEffectiveLength();
+        // FieldBegin_m = bend->getEffectiveCenter() - Length_m / 2.0;
+        // bendName_m = bend->getName();
+    }
 }
 
 WakeType CSR2DMLWakeFunction::getType() const {
