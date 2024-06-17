@@ -6,6 +6,8 @@ set -eou pipefail
 # Need new pybind `pip install --upgrade pybind11[global]`
 # pybind11-config --cmakedir
 
+
+# TODO(e-carlin): copied from codes.sh
 declare -A codes_dir=()
 
 codes_dir_setup() {
@@ -34,14 +36,7 @@ codes_dir_setup() {
         todo+=( $d )
         codes_dir[$n]=$d
     done
-    # if codes_is_common; then
-    #     install_msg 'creating directories'
-    #     mkdir -p "${todo[@]}"
-    # else
-
-    #     # common doesn't use pyenv_prefix, it creates it
-        codes_dir[pyenv_prefix]=$(realpath "$(pyenv prefix)")
-    # fi
+    codes_dir[pyenv_prefix]=$(realpath "$(pyenv prefix)")
 }
 
 codes_cmake() {
@@ -95,7 +90,7 @@ if [[ ! -d build ]]; then
         -D USE_STATIC_LIBRARIES=FALSE
 fi
 cd ~/src/radiasoft/mlopal/build
-codes_make all
+
 
 
     # H5HUT_PREFIX="${codes_dir[prefix]}" \

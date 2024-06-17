@@ -40,7 +40,6 @@ CSR2DMLWakeFunction::CSR2DMLWakeFunction(
 
 void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
-    std::cout << "1111111111111111" << std::endl;
     std::pair<double, double> meshInfoX;
     std::pair<double, double> meshInfoY;
     // TODO(e-carlin): one nBins_m
@@ -53,7 +52,6 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     );
     Vector_t smin, smax;
     bunch->get_bounds(smin, smax);
-    std::cout << "22222222222222222" << std::endl;
     py::scoped_interpreter guard{};
     py::object result = getWakeFn()(
         planeDensity_m,
@@ -62,7 +60,7 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
         smax(0) - smin(0),
         smax(2) - smin(2)
     );
-    std::cout << "xxxxxxxxxxxxxxxxxx The result is: " << result.cast<int>() << std::endl;
+    // std::cout << "The result is: " << result.cast<int>() << std::endl;
 }
 
 py::function CSR2DMLWakeFunction::getWakeFn() {
