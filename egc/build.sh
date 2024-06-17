@@ -90,8 +90,7 @@ if [[ ! -d build ]]; then
         -D USE_STATIC_LIBRARIES=FALSE
 fi
 cd ~/src/radiasoft/mlopal/build
-
-
+codes_make all
 
     # H5HUT_PREFIX="${codes_dir[prefix]}" \
     #     BOOST_DIR="${codes_dir[prefix]}" \
