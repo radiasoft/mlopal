@@ -58,8 +58,13 @@ codes_make() {
 }
 codes_dir_setup
 
-cd ~/src/radiasoft/mlopal
+pip install --upgrade pybind11[global]
+declare repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
 if [[ ! -d build ]]; then
+    cd /
+    rpm2cpio /home/vagrant/jupyter/StaffScratch/e-carlin/src/radiasoft/chris_mlopal/rs_scripts/rscode-trilinos-20230829.182134-1.x86_64.rpm | cpio -ivd &> /dev/null
+    cd "$repo_root"
     perl -pi -e 's{add_compile_options \(-Werror\)}{}' CMakeLists.txt
     perl -pi -e '
         # https://stackoverflow.com/a/20991533
@@ -89,7 +94,7 @@ if [[ ! -d build ]]; then
         -D ENABLE_SAAMG_SOLVER=TRUE \
         -D USE_STATIC_LIBRARIES=FALSE
 fi
-cd ~/src/radiasoft/mlopal/build
+cd "$repo_root"/build
 codes_make all
 
     # H5HUT_PREFIX="${codes_dir[prefix]}" \
