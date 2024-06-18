@@ -42,6 +42,8 @@ private:
     // Radius of curvature of effective dipole.
     double bendRadius_m;
     double totalBendAngle_m;
+    std::string writePlaneDensity(PartBunchBase<double, 3>* bunch, unsigned int nBinsX, unsigned int nBinsZ);
+    std::vector<std::vector<double>> readWake(std::filesystem::path planeDensityFile, unsigned int nBinsX, unsigned int nBinsZ);
 };
 
 #endif //CSR2DMLWAKEFUNCTION_HH
