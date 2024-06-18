@@ -130,7 +130,6 @@ if (WILL_BUILD_STATIC_LIBRARY)
         ${AMR_MG_SOLVER_LIBS}
         ${AMR_LIBS}
         ${MPI_CXX_LIBRARIES}
-        pybind11::embed # TODO(e-carlin): Is there a var for this?
         ${Python_LIBRARIES}
         )
     install (TARGETS libOPALstatic DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
@@ -153,7 +152,6 @@ if (WILL_BUILD_SHARED_LIBRARY)
         ${H5Hut_LIBRARY}
         ${HDF5_LIBRARIES}
         ${Boost_LIBRARIES}
-        pybind11::embed # TODO(e-carlin): Is there a var for this?
         ${Python_LIBRARIES}
         m
         z
@@ -176,7 +174,6 @@ target_link_libraries( opal
     ${H5Hut_LIBRARY}
     ${HDF5_LIBRARIES}
     ${Boost_LIBRARIES}
-    pybind11::embed # TODO(e-carlin): Is there a var for this?
     ${Python_LIBRARIES}
     m
     z

@@ -3,8 +3,6 @@ set -eou pipefail
 #
 # Build / recompile opal
 #
-# Need new pybind `pip install --upgrade pybind11[global]`
-# pybind11-config --cmakedir
 
 
 # TODO(e-carlin): copied from codes.sh
@@ -58,12 +56,12 @@ codes_make() {
 }
 codes_dir_setup
 
-pip install --upgrade pybind11[global]
 declare repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 if [[ ! -d build ]]; then
     cd /
-    rpm2cpio /home/vagrant/jupyter/StaffScratch/e-carlin/src/radiasoft/chris_mlopal/rs_scripts/rscode-trilinos-20230829.182134-1.x86_64.rpm | cpio -ivd &> /dev/null
+    # TODO(e-carlin): add back in
+    # rpm2cpio /home/vagrant/jupyter/StaffScratch/e-carlin/src/radiasoft/chris_mlopal/rs_scripts/rscode-trilinos-20230829.182134-1.x86_64.rpm | cpio -ivd &> /dev/null
     cd "$repo_root"
     perl -pi -e 's{add_compile_options \(-Werror\)}{}' CMakeLists.txt
     perl -pi -e '

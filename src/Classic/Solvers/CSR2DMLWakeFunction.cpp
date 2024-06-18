@@ -19,9 +19,6 @@
 #include "AbstractObjects/OpalData.h"
 
 #include <filesystem>
-#include <pybind11/embed.h>
-#include <pybind11/stl.h> // type conversion
-namespace py = pybind11;
 
 // TODO(e-carlin): needed?
 #include "Utilities/Util.h"
@@ -52,20 +49,14 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     );
     Vector_t smin, smax;
     bunch->get_bounds(smin, smax);
-    py::scoped_interpreter guard{};
-    py::object result = getWakeFn()(
-        planeDensity_m,
-        bendRadius_m,
-        totalBendAngle_m,
-        smax(0) - smin(0),
-        smax(2) - smin(2)
-    );
+    // py::object result = getWakeFn()(
+    //     planeDensity_m,
+    //     bendRadius_m,
+    //     totalBendAngle_m,
+    //     smax(0) - smin(0),
+    //     smax(2) - smin(2)
+    // );
     // std::cout << "The result is: " << result.cast<int>() << std::endl;
-}
-
-py::function CSR2DMLWakeFunction::getWakeFn() {
-    py::module::import("sys").attr("path").attr("append")(pyFilepath_m.parent_path().string().c_str());
-    return py::module::import(pyFilepath_m.stem().string().c_str()).attr("get_wake");
 }
 
 void CSR2DMLWakeFunction::initialize(const ElementBase* ref) {

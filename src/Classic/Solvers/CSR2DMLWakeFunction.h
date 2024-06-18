@@ -21,8 +21,6 @@
 
 #include <vector>
 #include <filesystem>
-#include <pybind11/embed.h>
-namespace py = pybind11;
 
 class Filter;
 class ElementBase;
@@ -44,7 +42,6 @@ private:
     // Radius of curvature of effective dipole.
     double bendRadius_m;
     double totalBendAngle_m;
-    py::function getWakeFn();
 };
 
 #endif //CSR2DMLWAKEFUNCTION_HH

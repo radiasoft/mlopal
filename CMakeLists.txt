@@ -1,5 +1,3 @@
-# TODO(e-carlin):  is this one needed? Can get the path by running `pybind11-config --cmakedir`
-list(APPEND CMAKE_MODULE_PATH "/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11")
 cmake_minimum_required (VERSION 3.12)
 cmake_policy(VERSION 3.12)
 
@@ -65,9 +63,7 @@ add_compile_options (-fstrict-aliasing)
 
 # TODO(e-carlin): Why do I have to hardcode these paths?
 set(Python_EXECUTABLE "/home/vagrant/.pyenv/shims/python3")
-set(pybind11_DIR "/home/vagrant/.pyenv/versions/3.9.15/envs/py3/lib/python3.9/site-packages/pybind11/share/cmake/pybind11")
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
 
 option (WILL_BUILD_STATIC_LIBRARY "Building static library" ON)
 if (BUILD_OPAL_PYTHON)
