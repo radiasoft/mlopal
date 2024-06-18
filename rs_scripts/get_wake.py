@@ -4,7 +4,6 @@ import sys
 
 def main(data_file):
     data = _read_data(data_file)
-    print("ddddddddd ", data)
     wake = _get_wake(data)
     _write_wake(wake)
 

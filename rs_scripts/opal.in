@@ -25,7 +25,7 @@ REAL time_step_1 = 4.37345628028939e-12;
 
 "OP1": option,autophase=1.0,csrdump=true,info=false,psdumpfreq=PS_DUMP_FREQUENCY,statdumpfreq=STAT_DUMP_FREQUENCY,version=10900.0;
 "SG_FILTER": filter,nleft=CSR_SG_NLEFT,npoints=CSR_SG_NLEFT + CSR_SG_NRIGHT + 1,nright=CSR_SG_NRIGHT,polyorder=CSR_SG_POLYORDER,type="SAVITZKY-GOLAY";
-"CSR_2D_ML_WAKE": wake,type="2D-CSR-ML",py_filepath="/home/vagrant/src/radiasoft/mlopal/egc/read.py",nbin=8;
+"CSR_2D_ML_WAKE": wake,type="2D-CSR-ML",py_filepath="/home/vagrant/jupyter/StaffScratch/e-carlin/src/radiasoft/chris_mlopal/rs_scripts/get_wake.py",nbin=8;
 
 "D1": DRIFT,l=drift_before_bend;
 "D2": DRIFT,l=0.4,wakef=CSR_2D_ML_WAKE;
