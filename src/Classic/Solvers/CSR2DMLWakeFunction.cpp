@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 
@@ -45,14 +46,14 @@ CSR2DMLWakeFunction::CSR2DMLWakeFunction(
 void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
     std::pair<double, double> meshInfoX;
-    std::pair<double, double> meshInfoY;
-    // TODO(e-carlin): one nBins_m
+    std::pair<double, double> meshInfoZ;
+    // TODO(e-carlin): nBins for X and for Z
     bunch->calcPlaneDensity(
         nBins_m,
         nBins_m,
         planeDensity_m,
         meshInfoX,
-        meshInfoY
+        meshInfoZ
     );
     std::string planeDensityFile = writePlaneDensity(bunch, nBins_m, nBins_m);
     std::string command = "python " + pyFilepath_m.string() + ' ' + planeDensityFile;
@@ -60,7 +61,31 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     if (WEXITSTATUS(ret) != 0) {
         throw std::runtime_error("command=" + command + " exited with error=" + std::to_string(ret));
     }
-    std::vector<std::vector<double>> wake = readWake(planeDensityFile, nBins_m, nBins_m);
+    std::vector<std::vector<double>> wakeX;
+    std::vector<std::vector<double>> wakeZ;
+    std::tie(wakeX, wakeZ) = readWakes(planeDensityFile, nBins_m, nBins_m);
+
+    // Apply wake to particles in bunch
+    const double &meshSpacingX = meshInfoX.second;
+    const double &meshSpacingZ = meshInfoZ.second;
+    const double &meshOriginX = meshInfoX.first + 0.5 * meshSpacingX;
+    const double &meshOriginZ = meshInfoZ.first + 0.5 * meshSpacingZ;
+    for (unsigned int i = 0; i < bunch->getLocalNum(); ++i) {
+        const Vector_t &R = bunch->R[i];
+        double distanceToOriginX = (R(0) - meshOriginX) / meshSpacingX;
+        double distanceToOriginZ = (R(2) - meshOriginZ) / meshSpacingZ;
+
+        unsigned int indexX = (unsigned int)floor(distanceToOriginX);
+        unsigned int indexZ = (unsigned int)floor(distanceToOriginZ);
+        double leverX = distanceToOriginX - indexX;
+        double leverZ = distanceToOriginZ - indexZ;
+
+        PAssert_LT(indexX, planeDensity_m.size() - 1);
+        PAssert_LT(indexZ, planeDensity_m[0].size() - 1);
+
+        bunch->Ef[i](0) += (1. - leverX) * wakeX[indexX][indexZ] + leverX * wakeX[indexX + 1][indexZ];
+        bunch->Ef[i](2) += (1. - leverZ) * wakeZ[indexX][indexZ] + leverZ * wakeZ[indexX + 1][indexZ];
+    }
 }
 
 void CSR2DMLWakeFunction::initialize(const ElementBase* ref) {
@@ -88,22 +113,34 @@ WakeType CSR2DMLWakeFunction::getType() const {
 }
 
 
-std::vector<std::vector<double>> CSR2DMLWakeFunction::readWake(std::filesystem::path planeDensityFile, unsigned int nBinsX, unsigned int nBinsZ) {
+std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>> CSR2DMLWakeFunction::readWakes(std::filesystem::path planeDensityFile, unsigned int nBinsX, unsigned int nBinsZ) {
+    // TODO(e-carlin): clean up all repetition in here.
+    std::vector<std::vector<double>> wakeX(nBinsX, std::vector<double>(nBinsZ));
+    std::vector<std::vector<double>> wakeZ(nBinsX, std::vector<double>(nBinsZ));
     std::ifstream infile(planeDensityFile.parent_path() / "wake.bin", std::ios::in | std::ios::binary);
     int num_elements = nBinsX * nBinsZ;
-    std::vector<double> wake_flat(num_elements);
-    infile.read((char*)&wake_flat[0], num_elements*sizeof(double));
-    infile.close();
+    std::vector<double> wakeFlatX(num_elements);
+    std::vector<double> waktFlatZ(num_elements);
 
+    infile.read((char*)&waktFlatZ[0], num_elements*sizeof(double));
     // Reshape the flat vector into a 2D vector
-    std::vector<std::vector<double>> wake(nBinsX, std::vector<double>(nBinsZ));
     for (unsigned int i = 0; i < nBinsX; ++i) {
         for (unsigned int j = 0; j < nBinsZ; ++j) {
-            wake[i][j] = wake_flat[i * nBinsZ + j];
+            wakeZ[i][j] = waktFlatZ[i * nBinsZ + j];
         }
     }
 
-    return wake;
+    infile.read((char*)&wakeFlatX[0], num_elements*sizeof(double));
+    // Reshape the flat vector into a 2D vector
+    for (unsigned int i = 0; i < nBinsX; ++i) {
+        for (unsigned int j = 0; j < nBinsZ; ++j) {
+            wakeX[i][j] = wakeFlatX[i * nBinsZ + j];
+        }
+    }
+
+
+    infile.close();
+    return std::make_tuple(wakeX, wakeZ);
 }
 
 std::string CSR2DMLWakeFunction::writePlaneDensity(PartBunchBase<double, 3>* bunch, unsigned int nBinsX, unsigned int nBinsZ) {
@@ -120,8 +157,6 @@ std::string CSR2DMLWakeFunction::writePlaneDensity(PartBunchBase<double, 3>* bun
     assert(cols == nBinsZ);
     outfile.write((char*)&rows, sizeof(double));
     outfile.write((char*)&cols, sizeof(double));
-    // outfile.write((char*)&nBinsZ, sizeof(double));
-    // outfile.write((char*)&nBinsZ, sizeof(double));
 
     // Write out array
     for (const auto &row : planeDensity_m) {

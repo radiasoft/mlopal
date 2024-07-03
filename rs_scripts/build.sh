@@ -58,9 +58,12 @@ codes_dir_setup
 
 declare repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
-if [[ ! -d build ]]; then
+if [[ ! -e /home/vagrant/.local/lib/libtrilinosss.a ]]; then
     cd /
     rpm2cpio /home/vagrant/jupyter/StaffScratch/e-carlin/src/radiasoft/chris_mlopal/rs_scripts/rscode-trilinos-20230829.182134-1.x86_64.rpm | cpio -ivd &> /dev/null
+    cd -
+fi
+if [[ ! -d build ]]; then
     cd "$repo_root"
     perl -pi -e 's{add_compile_options \(-Werror\)}{}' CMakeLists.txt
     perl -pi -e '

@@ -4,14 +4,14 @@ import sys
 
 def main(data_file):
     data = _read_data(data_file)
-    wake = _get_wake(data)
-    _write_wake(wake)
+    ws, wx = _get_wake(data)
+    _write_wake(ws, wx)
 
 
 def _get_wake(data):
     # TODO(e-carlin): implement by calling model
     a = data["lambda_distribution"]
-    return np.random.rand(len(a), len(a[0]))
+    return np.random.rand(len(a), len(a[0])), np.random.rand(len(a), len(a[0]))
 
 
 def _read_data(data_file):
@@ -28,9 +28,10 @@ def _read_data(data_file):
     }
 
 
-def _write_wake(wake):
+def _write_wake(wake_s, wake_x):
     with open("wake.bin", "wb") as f:
-        wake.tofile(f)
+        wake_s.tofile(f)
+        wake_x.tofile(f)
 
 
 if __name__ == "__main__":
