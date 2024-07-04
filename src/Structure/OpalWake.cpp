@@ -22,6 +22,7 @@
 #include "Attributes/Attributes.h"
 #include "Solvers/GreenWakeFunction.h"
 #include "Solvers/CSRWakeFunction.h"
+#include "Solvers/CSR2DMLWakeFunction.h"
 #include "Solvers/CSRIGFWakeFunction.h"
 #include "Utilities/OpalException.h"
 #include "Utilities/OpalFilter.h"
@@ -43,6 +44,9 @@ namespace {
         TAU,
         FILTERS,      // List of filters to apply on line density
         FNAME,
+        PY_FILEPATH,
+        NBINX,
+        NBINZ,
         SIZE
     };
 }
@@ -54,7 +58,7 @@ OpalWake::OpalWake():
     wf_m(0) {
     itsAttr[TYPE] = Attributes::makePredefinedString
         ("TYPE", "Specifies the wake function.",
-         {"1D-CSR", "1D-CSR-IGF", "LONG-SHORT-RANGE", "TRANSV-SHORT-RANGE"});
+         {"2D-CSR-ML", "1D-CSR", "1D-CSR-IGF", "LONG-SHORT-RANGE", "TRANSV-SHORT-RANGE"});
 
     itsAttr[NBIN] = Attributes::makeReal
         ("NBIN", "Number of bins for the line density calculation");
@@ -82,6 +86,15 @@ OpalWake::OpalWake():
 
     itsAttr[FNAME] = Attributes::makeString
         ("FNAME", "Filename of the wakefield file");
+
+    itsAttr[PY_FILEPATH] = Attributes::makeString
+        ("PY_FILEPATH", "Python program called to calculate wake fields in 2D-CSR-ML");
+
+    itsAttr[NBINX] = Attributes::makeReal
+        ("NBINX", "Number of bins in the X dimension for the plane density calculation");
+
+    itsAttr[NBINZ] = Attributes::makeReal
+        ("NBINZ", "Number of bins in the Z dimension for the plane density calculation");
 
     OpalWake* defWake = clone("UNNAMED_WAKE");
     defWake->builtin = true;
@@ -162,6 +175,7 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     }
 
     static const std::unordered_map<std::string, OpalWakeType> stringOpalWakeType_s = {
+        {"2D-CSR-ML",                 OpalWakeType::CSR2DML},
         {"1D-CSR",             OpalWakeType::CSR},
         {"1D-CSR-IGF",         OpalWakeType::CSRIGF},
         {"LONG-SHORT-RANGE",   OpalWakeType::LONGSHORTRANGE},
@@ -174,6 +188,23 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     }
     OpalWakeType type = stringOpalWakeType_s.at(Attributes::getString(itsAttr[TYPE]));
     switch (type) {
+        case OpalWakeType::CSR2DML: {
+            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBINX]) <= 7) {
+                throw OpalException("OpalWake::initWakeFunction",
+                                    "NBINX: At least 8 bins have to be used, ideally far more");
+            }
+            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBINZ]) <= 7) {
+                throw OpalException("OpalWake::initWakeFunction",
+                                    "NBINZ: At least 8 bins have to be used, ideally far more");
+            }
+            wf_m = new CSR2DMLWakeFunction(
+                getOpalName(),
+                Attributes::getString(itsAttr[PY_FILEPATH]),
+                (int)(Attributes::getReal(itsAttr[NBINX])),
+                (int)(Attributes::getReal(itsAttr[NBINZ]))
+                );
+            break;
+        }
         case OpalWakeType::CSR: {
             if (filters.size() == 0 && Attributes::getReal(itsAttr[NBIN]) <= 7) {
                 throw OpalException("OpalWake::initWakeFunction",

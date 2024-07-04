@@ -56,10 +56,14 @@ add_definitions (-DNOCTAssert)
 add_compile_options (-Wall)
 add_compile_options (-Wunused)
 add_compile_options (-Wextra)
-add_compile_options (-Werror)
+
 
 add_compile_options (-funroll-loops)
 add_compile_options (-fstrict-aliasing)
+
+# TODO(e-carlin): Why do I have to hardcode these paths?
+set(Python_EXECUTABLE "/home/vagrant/.pyenv/shims/python3")
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
 option (WILL_BUILD_STATIC_LIBRARY "Building static library" ON)
 if (BUILD_OPAL_PYTHON)
@@ -68,8 +72,8 @@ if (BUILD_OPAL_PYTHON)
 endif ()
 
 if (${WILL_BUILD_SHARED_LIBRARY})
-    add_compile_options (-fPIE -fPIC)
-    add_link_options (-pie)
+    add_compile_options ( -fPIC)
+
     # force OPAL to link to shared libraries
     if (UNIX)
         set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
@@ -142,9 +146,9 @@ if (CMAKE_Fortran_COMPILER)
     if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         set (Fortran_LIBS "-lgfortran")
     endif ()
-    # CMake issue. Missing library libmpi_mpifh in MPI_Fortran_LINRARIES.
+
     # See issue 587 and corresponding merge request 415.
-    set (Fortran_LIBS "${Fortran_LIBS} -lmpi_mpifh")
+
 else ()
     message (STATUS "No Fortran compiler found (optional)")
     if (ENABLE_AMR)
@@ -171,7 +175,7 @@ set (BOOSTROOT $ENV{BOOST_DIR})
 if (NOT ${WILL_BUILD_SHARED_LIBRARY})
     set (Boost_USE_STATIC_LIBS ON)
 endif ()
-set (Boost_USE_MULTITHREADED OFF)
+set (Boost_USE_MULTITHREADED ON)
 set (Boost_USE_STATIC_RUNTIME OFF)
 set (Boost_LIBS chrono filesystem iostreams regex serialization system timer)
 find_package (Boost 1.66.0

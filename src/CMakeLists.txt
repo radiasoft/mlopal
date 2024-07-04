@@ -106,6 +106,7 @@ include_directories (BEFORE
     ${AMREX_INCLUDE_DIR}
     ${GTEST_INCLUDE_DIRS}
     ${OPTP_INCLUDE_DIR}
+    ${Python_INCLUDE_DIRS}
     )
 
 link_directories (
@@ -129,6 +130,7 @@ if (WILL_BUILD_STATIC_LIBRARY)
         ${AMR_MG_SOLVER_LIBS}
         ${AMR_LIBS}
         ${MPI_CXX_LIBRARIES}
+        ${Python_LIBRARIES}
         )
     install (TARGETS libOPALstatic DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
@@ -150,6 +152,7 @@ if (WILL_BUILD_SHARED_LIBRARY)
         ${H5Hut_LIBRARY}
         ${HDF5_LIBRARIES}
         ${Boost_LIBRARIES}
+        ${Python_LIBRARIES}
         m
         z
         "-rdynamic"
@@ -171,6 +174,7 @@ target_link_libraries( opal
     ${H5Hut_LIBRARY}
     ${HDF5_LIBRARIES}
     ${Boost_LIBRARIES}
+    ${Python_LIBRARIES}
     m
     z
     ${CMAKE_DL_LIBS}

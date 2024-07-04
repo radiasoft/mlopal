@@ -505,6 +505,83 @@ void PartBunchBase<T, Dim>::calcLineDensity(unsigned int nBins,
     meshInfo.second = hz;
 }
 
+// Template function to calculate the density of a particle bunch over a plane
+template <class T, unsigned Dim>
+void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int nBinsZ,
+                                             std::vector<std::vector<double>>& planeDensity,
+                                             std::pair<double, double>& meshInfoX,
+                                             std::pair<double, double>& meshInfoZ) {
+    // Get the bounds of the particle bunch
+    Vector_t rmin, rmax;
+    get_bounds(rmin, rmax);
+
+    // If the number of bins in either dimension is less than 2,
+    // update the domain length
+    // TODO(e-carlin): copied from calcLineDensity. Why is this needed?
+    if (nBinsX < 2 || nBinsZ < 2) {
+        Vektor<int, 3>/*NDIndex<3>*/ grid;
+        this->updateDomainLength(grid);
+        nBinsX = grid[0];
+        nBinsZ = grid[2];
+    }
+
+    // Calculate the length and bin size in the x dimension
+    double lengthX = rmax(0) - rmin(0);
+    // dh_m is a relative factor to increase the mesh size. It helps to make
+    // it so particles at edges of the bunch aren't incorrectly binned (I think?).
+    double xmin = rmin(0) - dh_m * lengthX, xmax = rmax(0) + dh_m * lengthX;
+    // hx is the size of each bin (I think?)
+    // TODO(e-carlin): why subtract 2 from the nBins?
+    double hx = (xmax - xmin) / (nBinsX - 2);
+
+    // Calculate the length and bin size in the z dimension
+    double lengthZ = rmax(2) - rmin(2);
+    double zmin = rmin(2) - dh_m * lengthZ, zmax = rmax(2) + dh_m * lengthZ;
+    double hz = (zmax - zmin) / (nBinsZ - 2);
+
+    // Calculate the area of each bin (inverse of the density per meter)
+    double perMeter = 1.0 / (hx * hz);
+    xmin -= hx;
+    zmin -= hz;
+
+    // Initialize the 2D density vector with zeros
+    planeDensity.resize(nBinsX, std::vector<double>(nBinsZ, 0.0));
+    // TODO(e-carlin): is this needed or did the step above cover it?
+    for(auto& line : planeDensity) {
+        std::fill(line.begin(), line.end(), 0.0);
+    }
+
+    // Go through each particle and add its contribution to the bins it falls into
+    const unsigned int lN = getLocalNum();
+    for (unsigned int i = 0; i < lN; ++ i) {
+        const double x = R[i](0) - 0.5 * hx;
+        const double z = R[i](2) - 0.5 * hz;
+        unsigned int idx = (x - xmin) / hx;
+        unsigned int idz = (z - zmin) / hz;
+        double tau_x = (x - xmin) / hx - idx;
+        double tau_z = (z - zmin) / hz - idz;
+
+        // Add the particle's contribution to the four bins it may fall into
+        planeDensity[idx][idz] += Q[i] * (1.0 - tau_x) * (1.0 - tau_z) * perMeter;
+        planeDensity[idx][idz + 1] += Q[i] * tau_x * (1.0 - tau_z) * perMeter;
+        planeDensity[idx + 1][idz] += Q[i] * (1.0 - tau_x) * tau_z * perMeter;
+        planeDensity[idx + 1][idz + 1] += Q[i] * tau_x * tau_z * perMeter;
+    }
+
+    // Reduce the density values for all bins
+    // TODO(e-carlin): need to understand this more. Need to get types right to make compiler happy
+    // for(auto& line : planeDensity) {
+    //     reduce(line, line, line.end() - line.begin(), OpAddAssign());
+    // }
+
+    // Set the mesh information for x and z dimensions
+    meshInfoX.first = xmin;
+    meshInfoX.second = hx;
+    meshInfoZ.first = zmin;
+    meshInfoZ.second = hz;
+}
+
+
 
 template <class T, unsigned Dim>
 void PartBunchBase<T, Dim>::boundp() {
@@ -586,12 +663,12 @@ void PartBunchBase<T, Dim>::boundp() {
             Layout_t* layoutp = static_cast<Layout_t*>(&getLayout());
             layoutp->setCacheDimension(0,fs_m->solver_m->getinteractionRadius());
             layoutp->setCacheDimension(1,fs_m->solver_m->getinteractionRadius());
-            
+
             double gammaz = sum(this->P)[2] / getTotalNum();
             gammaz *= gammaz;
             gammaz = std::sqrt(gammaz + 1.0);
 
-            //Interaction radius is set in the boosted frame but ghost particles 
+            //Interaction radius is set in the boosted frame but ghost particles
             //are identified in the lab frame that's why we divide by gammaz here
             layoutp->setCacheDimension(2,fs_m->solver_m->getinteractionRadius()/gammaz);
             layoutp->enableCaching();
@@ -1343,7 +1420,7 @@ void PartBunchBase<T, Dim>::setSolver(FieldSolver *fs) {
 //         this->setMesh(fs_m->getMesh());
 //         this->setFieldLayout(fs_m->getFieldLayout());
     }
-    
+
 }
 
 

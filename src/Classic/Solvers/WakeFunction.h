@@ -26,6 +26,7 @@ template <class T, unsigned Dim>
 class PartBunchBase;
 
 enum class WakeType: unsigned short {
+    CSR2DMLWakeFunction,
     CSRWakeFunction,
     CSRIGFWakeFunction,
     GreenWakeFunction
