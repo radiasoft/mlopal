@@ -27,7 +27,7 @@ class ElementBase;
 
 class CSR2DMLWakeFunction: public WakeFunction {
 public:
-    CSR2DMLWakeFunction(const std::string& name, const std::filesystem::path pyFilepath, const unsigned int& N);
+    CSR2DMLWakeFunction(const std::string& name, const std::filesystem::path pyFilepath, const unsigned int& nBinsX, const unsigned int& nBinsZ);
 
     void apply(PartBunchBase<double, 3>* bunch) override;
 
@@ -42,6 +42,8 @@ private:
     // Radius of curvature of effective dipole.
     double bendRadius_m;
     double totalBendAngle_m;
+    unsigned int nBinsX_m;
+    unsigned int nBinsZ_m;
     std::string writePlaneDensity(PartBunchBase<double, 3>* bunch, unsigned int nBinsX, unsigned int nBinsZ);
     std::tuple<std::vector<std::vector<double>>, std::vector<std::vector<double>>> readWakes(std::filesystem::path planeDensityFile, unsigned int nBinsX, unsigned int nBinsZ);
 };

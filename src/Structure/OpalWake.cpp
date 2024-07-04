@@ -45,6 +45,8 @@ namespace {
         FILTERS,      // List of filters to apply on line density
         FNAME,
         PY_FILEPATH,
+        NBINX,
+        NBINZ,
         SIZE
     };
 }
@@ -59,7 +61,7 @@ OpalWake::OpalWake():
          {"2D-CSR-ML", "1D-CSR", "1D-CSR-IGF", "LONG-SHORT-RANGE", "TRANSV-SHORT-RANGE"});
 
     itsAttr[NBIN] = Attributes::makeReal
-        ("NBIN", "Number of bins for the line/plane density calculation");
+        ("NBIN", "Number of bins for the line density calculation");
 
     itsAttr[CONST_LENGTH] = Attributes::makeBool
         ("CONST_LENGTH", "True if the length of the Bunch is considered as constant");
@@ -86,7 +88,13 @@ OpalWake::OpalWake():
         ("FNAME", "Filename of the wakefield file");
 
     itsAttr[PY_FILEPATH] = Attributes::makeString
-        ("PY_FILEPATH", "TODO doc");
+        ("PY_FILEPATH", "Python program called to calculate wake fields in 2D-CSR-ML");
+
+    itsAttr[NBINX] = Attributes::makeReal
+        ("NBINX", "Number of bins in the X dimension for the plane density calculation");
+
+    itsAttr[NBINZ] = Attributes::makeReal
+        ("NBINZ", "Number of bins in the Z dimension for the plane density calculation");
 
     OpalWake* defWake = clone("UNNAMED_WAKE");
     defWake->builtin = true;
@@ -181,14 +189,19 @@ void OpalWake::initWakefunction(const ElementBase& element) {
     OpalWakeType type = stringOpalWakeType_s.at(Attributes::getString(itsAttr[TYPE]));
     switch (type) {
         case OpalWakeType::CSR2DML: {
-            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBIN]) <= 7) {
+            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBINX]) <= 7) {
                 throw OpalException("OpalWake::initWakeFunction",
-                                    "At least 8 bins have to be used, ideally far more");
+                                    "NBINX: At least 8 bins have to be used, ideally far more");
+            }
+            if (filters.size() == 0 && Attributes::getReal(itsAttr[NBINZ]) <= 7) {
+                throw OpalException("OpalWake::initWakeFunction",
+                                    "NBINZ: At least 8 bins have to be used, ideally far more");
             }
             wf_m = new CSR2DMLWakeFunction(
                 getOpalName(),
                 Attributes::getString(itsAttr[PY_FILEPATH]),
-                (int)(Attributes::getReal(itsAttr[NBIN]))
+                (int)(Attributes::getReal(itsAttr[NBINX])),
+                (int)(Attributes::getReal(itsAttr[NBINZ]))
                 );
             break;
         }

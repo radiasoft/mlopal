@@ -34,11 +34,15 @@
 CSR2DMLWakeFunction::CSR2DMLWakeFunction(
     const std::string& name,
     std::filesystem::path pyFilepath,
-    const unsigned int& N
+    const unsigned int& nBinsX,
+    const unsigned int& nBinsZ
     ):
-    WakeFunction(name, N),
+    // TODO(e-carlin): not great to set 0 here
+    WakeFunction(name, 0),
     bendRadius_m(0.0),
     planeDensity_m(),
+    nBinsX_m(nBinsX),
+    nBinsZ_m(nBinsZ),
     pyFilepath_m(pyFilepath),
     totalBendAngle_m(0.0)
 {}
@@ -47,15 +51,14 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     Inform msg("MLWake ");
     std::pair<double, double> meshInfoX;
     std::pair<double, double> meshInfoZ;
-    // TODO(e-carlin): nBins for X and for Z
     bunch->calcPlaneDensity(
-        nBins_m,
-        nBins_m,
+        nBinsX_m,
+        nBinsZ_m,
         planeDensity_m,
         meshInfoX,
         meshInfoZ
     );
-    std::string planeDensityFile = writePlaneDensity(bunch, nBins_m, nBins_m);
+    std::string planeDensityFile = writePlaneDensity(bunch, nBinsX_m, nBinsZ_m);
     std::string command = "python " + pyFilepath_m.string() + ' ' + planeDensityFile;
     int ret = std::system(command.c_str());
     if (WEXITSTATUS(ret) != 0) {
@@ -63,7 +66,7 @@ void CSR2DMLWakeFunction::apply(PartBunchBase<double, 3>* bunch) {
     }
     std::vector<std::vector<double>> wakeX;
     std::vector<std::vector<double>> wakeZ;
-    std::tie(wakeX, wakeZ) = readWakes(planeDensityFile, nBins_m, nBins_m);
+    std::tie(wakeX, wakeZ) = readWakes(planeDensityFile, nBinsX_m, nBinsZ_m);
 
     // Apply wake to particles in bunch
     const double &meshSpacingX = meshInfoX.second;

@@ -545,7 +545,7 @@ void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int n
     zmin -= hz;
 
     // Initialize the 2D density vector with zeros
-    planeDensity.resize(nBinsZ, std::vector<double>(nBinsX, 0.0));
+    planeDensity.resize(nBinsX, std::vector<double>(nBinsZ, 0.0));
     // TODO(e-carlin): is this needed or did the step above cover it?
     for(auto& line : planeDensity) {
         std::fill(line.begin(), line.end(), 0.0);
@@ -562,10 +562,10 @@ void PartBunchBase<T, Dim>::calcPlaneDensity(unsigned int nBinsX, unsigned int n
         double tau_z = (z - zmin) / hz - idz;
 
         // Add the particle's contribution to the four bins it may fall into
-        planeDensity[idz][idx] += Q[i] * (1.0 - tau_x) * (1.0 - tau_z) * perMeter;
-        planeDensity[idz][idx + 1] += Q[i] * tau_x * (1.0 - tau_z) * perMeter;
-        planeDensity[idz + 1][idx] += Q[i] * (1.0 - tau_x) * tau_z * perMeter;
-        planeDensity[idz + 1][idx + 1] += Q[i] * tau_x * tau_z * perMeter;
+        planeDensity[idx][idz] += Q[i] * (1.0 - tau_x) * (1.0 - tau_z) * perMeter;
+        planeDensity[idx][idz + 1] += Q[i] * tau_x * (1.0 - tau_z) * perMeter;
+        planeDensity[idx + 1][idz] += Q[i] * (1.0 - tau_x) * tau_z * perMeter;
+        planeDensity[idx + 1][idz + 1] += Q[i] * tau_x * tau_z * perMeter;
     }
 
     // Reduce the density values for all bins
